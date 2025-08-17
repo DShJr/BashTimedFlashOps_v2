@@ -55,6 +55,7 @@ This is a simplified version of a homework assignment, showcasing basic skills i
 #!/bin/bash
 
 # --- SETTINGS ---
+
 FLASH_DRIVE_MOUNT_POINT="/media/dima/SMARTBUY"
 FILES_FOLDER="test_files_generation"
 FULL_PATH_TO_FOLDER="$FLASH_DRIVE_MOUNT_POINT/$FILES_FOLDER"
@@ -62,6 +63,7 @@ FULL_PATH_TO_FOLDER="$FLASH_DRIVE_MOUNT_POINT/$FILES_FOLDER"
 FILES_SIZE_MB=10
 NUMBER_OF_FILES=200
 FILENAME_PREFIX="dummy_file_"
+
 # ---/SETTINGS ---
 
 # Проверка, на монтирование флэшки
@@ -108,11 +110,11 @@ FLASH_DRIVE_MOUNT_POINT="/media/dima/SMARTBUY"
 FILES_FOLDER="test_files_generation"
 FULL_PATH_TO_FOLDER="$FLASH_DRIVE_MOUNT_POINT/$FILES_FOLDER"
 
-# Процент свободного места, при достижении которого скрипт Прекратит удаление (>
+# Процент свободного места, при достижении которого скрипт Прекратит удаление (то есть если места меньше 20%, удаляем, пока не станет >=20%).
 # Однако, в рамках Теста, процент выставим не 20, а 95.
 MIN_FREE_SPACE_PERCENT=95
 
-# Шаблон имени файлов для удаления (должен соответствовать файлам, созданным ge>
+# Шаблон имени файлов для удаления (должен соответствовать файлам, созданным generation_files.sh).
 FILENAME_PATTERN="dummy_file_*.bin"
 
 # Колическтво файлов, удалемых за одну итерацию (для поэтапного удаления)
@@ -326,6 +328,7 @@ crontab -e
 #!/bin/bash
 
 # --- SETTINGS ---
+
 FLASH_DRIVE_MOUNT_POINT="/media/dima/SMARTBUY"
 FILES_FOLDER="test_files_generation"
 FULL_PATH_TO_FOLDER="$FLASH_DRIVE_MOUNT_POINT/$FILES_FOLDER"
@@ -333,6 +336,7 @@ FULL_PATH_TO_FOLDER="$FLASH_DRIVE_MOUNT_POINT/$FILES_FOLDER"
 FILES_SIZE_MB=10
 NUMBER_OF_FILES=200
 FILENAME_PREFIX="dummy_file_"
+
 # ---/SETTINGS ---
 
 # Проверка, на монтирование флэшки
@@ -379,11 +383,11 @@ FLASH_DRIVE_MOUNT_POINT="/media/dima/SMARTBUY"
 FILES_FOLDER="test_files_generation"
 FULL_PATH_TO_FOLDER="$FLASH_DRIVE_MOUNT_POINT/$FILES_FOLDER"
 
-# Процент свободного места, при достижении которого скрипт Прекратит удаление (>
+# Процент свободного места, при достижении которого скрипт Прекратит удаление (то есть если места меньше 20%, удаляем, пока не станет >=20%).
 # Однако, в рамках Теста, процент выставим не 20, а 95.
 MIN_FREE_SPACE_PERCENT=95
 
-# Шаблон имени файлов для удаления (должен соответствовать файлам, созданным ge>
+# Шаблон имени файлов для удаления (должен соответствовать файлам, созданным generation_files.sh).
 FILENAME_PATTERN="dummy_file_*.bin"
 
 # Колическтво файлов, удалемых за одну итерацию (для поэтапного удаления)
