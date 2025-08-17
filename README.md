@@ -3,10 +3,10 @@
 ## EN
 
 ### Description
-Version 2 of the Bash script. Improved logic and added new features.
-The script checks the percentage of free space and starts deleting files if it falls bellow a set threshold. Deletion is based on filename pattern, starting with the oldest files, 10 at a time. Both scripts are designed to be scheduled via `cron`.
+Second version of a Bash script for automated disk cleanup.
+The script checks the percentage of free space and starts deleting files if it falls below a set threshold. Deletion is based on filename pattern, starting with the oldest files, 10 at a time. Both scripts are designed to be scheduled via `cron`.
 
-[**Ссылка на первую версию Bash-скрипта**](https://github.com/DShJr/BashTimedFlashOps)
+[**Link to the first version of the Bash script**](https://github.com/DShJr/BashTimedFlashOps)
 
 **The repository contains two main scripts:**
 
@@ -39,17 +39,17 @@ This is a simplified version of a homework assignment, showcasing basic skills i
    
    This will be the naming pattern for the files.
 
-#### Шаг 1
+#### Step 1
 
-**Скрипт Bash #1.**
+**Bash Script #1.**
 
-**Назначение:** Только `создание` файлов.
+**Purpose:** File `creation` only.
 
-**Имя скрипта:** `generation_files.sh`
+**Script Name:** `generation_files.sh`
 
-**Описание скрипта:** Он будет просто создавать определённое количество файлов (в нашем случае, 200), каждый размером в 10МБ.
+**Script Description:** It will simply create a certain number of files (in our case, 200), each with a size of 10MB.
 
-**Код скрипта:**
+**Script Code:**
 
 ```Bash
 #!/bin/bash
@@ -66,40 +66,40 @@ FILENAME_PREFIX="dummy_file_"
 
 # ---/SETTINGS ---
 
-# Проверка, на монтирование флэшки
+# Check if the flash drive is mounted
 if ! mountpoint -q "$FLASH_DRIVE_MOUNT_POINT"; then
-    echo "ERROR: Флэшка '$FLASH_DRIVE_MOUNT_POINT' не примантирована или не доступна. Проверь, подключена ли флэшка."
+    echo "ERROR: Flash drive '$FLASH_DRIVE_MOUNT_POINT' is not mounted or not accessible. Check if the flash drive is connected."
     exit 1
 fi
 
-# Проверим, Существует ли папка, и создадим, если её нет
+# Check if the folder exists, and create it if it doesn't
 if [ ! -d "$FULL_PATH_TO_FOLDER" ]; then
     mkdir -p "$FULL_PATH_TO_FOLDER"
-    echo "Папка '$FULL_PATH_TO_FOLDER' создана."
+    echo "Folder '$FULL_PATH_TO_FOLDER' created."
 fi
 
-# Генерация файлов
+# File generation
 for ((i=1; i<="$NUMBER_OF_FILES"; i++)); do
-    # Форматирование имени файла с нулями
+    # Format the filename with leading zeros
     FILENAME=$(printf "%s%03d.bin" "$FILENAME_PREFIX" "$i")
     FILEPATH="$FULL_PATH_TO_FOLDER/$FILENAME"
 
-    # Создадим файлы с заданным Размером в Мегобайтах
+    # Create files with the specified size in Megabytes
     dd if=/dev/zero of="$FILEPATH" bs=1M count="$FILES_SIZE_MB" status=none
-    echo "Создан файл: $FILENAME"
+    echo "File created: $FILENAME"
 done
-echo "Все файлы созданы."
+echo "All files created."
 ```
 
-**Скрипт Bash #2.**
+**Bash Script #2.**
 
-**Назначение:** Для `удаления` файлов.
+**Purpose:** File `deletion`.
 
-**Имя скрипта:** `smart_cleanup_files.sh`
+**Script Name:** `smart_cleanup_files.sh`
 
-**Описание скрипта:** Он будет удалять файлы с префиксом `dummy_file_` по 10 штук за одну итерацию, пока процент свободного места не достигнет `95%` или выше.
+**Script Description** It will delete files with the `dummy_file_` prefix, 10 at a time, until the percentage of free space reaches `95%` or more.
 
-**Код скрипта:**
+**Script Code:**
 
 ```Bash
 #!/bin/bash
@@ -110,17 +110,17 @@ FLASH_DRIVE_MOUNT_POINT="/media/dima/SMARTBUY"
 FILES_FOLDER="test_files_generation"
 FULL_PATH_TO_FOLDER="$FLASH_DRIVE_MOUNT_POINT/$FILES_FOLDER"
 
-# Процент свободного места, при достижении которого скрипт Прекратит удаление (то есть если места меньше 20%, удаляем, пока не станет >=20%).
-# Однако, в рамках Теста, процент выставим не 20, а 95.
+# The percentage of free space at which the script will stop deleting (i.e., if space is less than 20%, delete until it becomes >=20%).
+# However, for the purpose of this test, we'll set the percentage to 95, not 20.
 MIN_FREE_SPACE_PERCENT=95
 
-# Шаблон имени файлов для удаления (должен соответствовать файлам, созданным generation_files.sh).
+# Filename pattern for deletion (must match the files created by `generation_files.sh`).
 FILENAME_PATTERN="dummy_file_*.bin"
 
-# Колическтво файлов, удалемых за одну итерацию (для поэтапного удаления)
+# Number of files to delete per iteration (for gradual deletion)
 FILES_TO_DELETE_PER_ITERATION=10
 
-# Путь для лог-файла. Будем использовать в Функции логирования.
+# Path for the log file. Will be used in the logging function.
 LOG_FILE="/tmp/log/smart_cleanup.log"
 
 # --- /SETTINGS ---
@@ -133,13 +133,13 @@ log_message () {
 # --- MAIN SCRIPT LOGIC ---
 log_message "INFO: Script started. Checking flash drive: $FLASH_DRIVE_MOUNT_POINT"
 
-# 1. Проверка, что флэшка Примонтирована  и Доступна.
+# 1. Check if the flash drive is mounted and accessible.
 if ! mountpoint -q "$FLASH_DRIVE_MOUNT_POINT"; then
     log_message "ERROR: Flash drive '$FLASH_DRIVE_MOUNT_POINT' is not mounted or not accessible. Exiting."
     exit 1
 fi
 
-# 2. Проверка, Существует ли целевая папка
+# 2. Check if the target folder exists
 if [ ! -d "$FULL_PATH_TO_FOLDER" ]; then
     log_message "WARNING: Target folder '$FULL_PATH_TO_FOLDER' not found. Nothing to cleanup. Exiting."
     exit 0
@@ -147,7 +147,7 @@ fi
 
 while true; do
     
-    # 3. Получение информации о Свободом месте
+    # 3. Get information about free space
     DF_OUTPUT=$(df -P "$FLASH_DRIVE_MOUNT_POINT" 2>/dev/null | awk 'NR==2 {print $2, $4}') 
     if [ -z "$FLASH_DRIVE_MOUNT_POINT" ]; then
         log_message "ERROR: Could not get disk space info for '$FLASH_DRIVE_MOUNT_POINT'. Check path or permissions. Exiting."
@@ -157,7 +157,7 @@ while true; do
     TOTAL_BLOCKS=$(echo "$DF_OUTPUT" | awk '{print $1}')
     AVAILABLE_BLOCKS=$(echo "$DF_OUTPUT" | awk '{print $2}')
 
-    # Прежде чем приступать к вычислению свободного места на флэшке - процент свободного места, - Сделаем проверку Отсутствия деления на ноль.
+    # Before calculating the percentage of free space on the flash drive, let's check for division by zero.
     if [ "$TOTAL_BLOCKS" -eq 0 ]; then
         log_message "ERROR: Total blocks on '$FLASH_DRIVE_MOUNT_POINT' is 0. Cannot calculate free space. Exiting."
         exit 1
@@ -166,16 +166,16 @@ while true; do
     FREE_SPACE_PERCENT=$(( AVAILABLE_BLOCKS * 100 / TOTAL_BLOCKS ))
     log_message "INFO: Current free space on '$FLASH_DRIVE_MOUNT_POINT': $FREE_SPACE_PERCENT% (Target: >= $MIN_FREE_SPACE_PERCENT%.)"
 
-    # 4. Проверка Условия на Свободное место
+    # 4. Check the condition for free space
     if [ "$FREE_SPACE_PERCENT" -ge "$MIN_FREE_SPACE_PERCENT" ]; then
         log_message "INFO: Free space ($FREE_SPACE_PERCENT%) is sufficient. No cleanup needed. Exiting."
         break
     fi
 
-    # 5. Если места не хватает, то Ищем и Удаляем файлы
+    # 5. If there is not enough space, we find and delete files
     log_message "WARNING: Free space is low ($FREE_SPACE_PERCENT%). Starting cleanup."
 
-    # Найдём Самые Старые файлы с заданным шаблоном
+    # Find the oldest files with the specified pattern
     FILES_TO_REMOVE=$(find "$FULL_PATH_TO_FOLDER" -maxdepth 1 -type f -name "$FILENAME_PATTERN" -printf '%T@ %p\n' 2>/dev/null | sort -n | head>
     if [ -z "$FILES_TO_REMOVE" ]; then
         log_message "INFO: No more files matching '$FILENAME_PATTERN' found in '$FULL_PATH_TO_FOLDER' to delete. Free space is still $FREE_SPAC>
@@ -188,7 +188,7 @@ while true; do
         rm -f "$file" || log_message "ERROR: Failed to delete $file."
     done
 
-    # Дадим системе немного времени обновить статистику диска.
+    # Give the system a little time to update disk statistics.
     sleep 2
 
 done
@@ -197,8 +197,8 @@ log_message "INFO: Script finished."
 ```
 
 
-#### Шаг 2
-**Назначим права обоим скриптам.**
+#### Step 2
+**Assign permissions to both scripts.**
 
 ```Bash
 chmod +x `generation_files.sh`
@@ -209,69 +209,69 @@ chmod +x `smart_cleanup_files.sh`
 ```
 
 
-#### Шаг 3
-**Тестирование.**
+#### Step 3
+**Testing.**
 
-**1)** **Запускаем скрипт генерации файлов:** `generation_files.sh`
+**1)** **Launch the file generation script:** `generation_files.sh`
 
 ```Bash
 ./generation_files.sh
 ```
 
-Он создаёт `200` файлов, которые займут 2ГБ на флэшке.
+It creates 200 files that will take up 2GB on the flash drive.
 
-**2)** **Убедимся, что свободное место `ниже` `95%`.**
-// В домашнем задании была задана величина в 20%. `Онако`, для упрощения процесса, я `увеличил` `до 95%`.
+**2)** **Make sure the free space is below `95%`.**
+In the homework, the value was set to 20%. However, to simplify the process, I increased it to 95%.
 
-Запускаем команду:
+Run the command:
 
 ```Bash
 df -h /media/user/SMARTBUY
 ```
 
-Так же, `для сравнения`, запускал эту же команду в другом формате в 1К-блоках.
+Also, for comparison, I ran the same command in a different format with 1K-blocks.
 
 ```Bash
 df -P /media/user/SMARTBUY
 ```
 
-Убедимся, что процент занятого места `больше` `5%`.
+Make sure that the percentage of occupied space is more than 5%.
 
-**3)** **Запускаем скрипт очистки:** `smart_cleanup_files.sh`
+**3)** **Run the cleanup script:** `smart_cleanup_files.sh`
 
 ```Bash
 ./smart_cleanup_files.sh
 ```
 
-Этот **скрипт должен определить**, что **места недостаточно, и начать** удалять файлы по 10 штук за одну итерацию, пока свободное место не достигнет 95% или выше.
+This script should determine that there is not enough space and start deleting files 10 at a time per iteration until the free space reaches 95% or higher.
 
-**4)** **Проверим содержимое лог-фйла**
+**4)** **Check the contents of the log file**
 
 ```Bash
 cat /tmp/log/smart_cleanup.log
 ```
 
 
-#### Шаг 4
-**Добавим задания через `crontab`, по загрузке этих скриптов по-очереди.**
+#### Step 4
+**Add jobs via `crontab` to load these scripts in sequence.**
 
-Откроем редактор заданий `cron`.
+Open the `cron` job editor.
 
 ```Bash
 crontab -e
 ```
 
-Добавим задачи в `crontab`:
-`generation_files.sh`: должен запускаться каждые 10 минут каждого часа.
-`smart_cleanup_files.sh`: должен запускаться каждые 18 минут каждого часа.
+Add the tasks to `crontab`:
+`generation_files.sh`: should run every 10 minutes of every hour.
+`smart_cleanup_files.sh`: should run every 18 minutes of every hour.
 
 ```Bash
 10 * * * * /home/user/..../`generation_files.sh` >> /tmp/log/cron_smart_cleanup.log 2>&1
 18 * * * * /home/user/..../`smart_cleanup_files.sh` >> /tmp/log/cron_smart_cleanup.log 2>&1
 ```
 
-### Результат выполнения.
-`Изображения` результатов выполнения скриптов `прилагаю`.
+### Result of Execution.
+Images of the script execution results are attached.
 
 
 ---
