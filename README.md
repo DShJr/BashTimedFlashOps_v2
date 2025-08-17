@@ -176,9 +176,9 @@ while true; do
     log_message "WARNING: Free space is low ($FREE_SPACE_PERCENT%). Starting cleanup."
 
     # Find the oldest files with the specified pattern
-    FILES_TO_REMOVE=$(find "$FULL_PATH_TO_FOLDER" -maxdepth 1 -type f -name "$FILENAME_PATTERN" -printf '%T@ %p\n' 2>/dev/null | sort -n | head>
+    FILES_TO_REMOVE=$(find "$FULL_PATH_TO_FOLDER" -maxdepth 1 -type f -name "$FILENAME_PATTERN" -printf '%T@ %p\n' 2>/dev/null | sort -n | head -n "$FILES_TO_DELETE_PER_ITERATION" | awk '{print $2}')
     if [ -z "$FILES_TO_REMOVE" ]; then
-        log_message "INFO: No more files matching '$FILENAME_PATTERN' found in '$FULL_PATH_TO_FOLDER' to delete. Free space is still $FREE_SPAC>
+        log_message "INFO: No more files matching '$FILENAME_PATTERN' found in '$FULL_PATH_TO_FOLDER' to delete. Free space is still $FREE_SPACE_PERCENT%. Exiting."
         exit 0
     fi
 
@@ -404,17 +404,17 @@ log_message () {
 }
 
 # --- MAIN SCRIPT LOGIC ---
-log_message "INFO: Script started. Checking flash drive: $FLASH_DRIVE_MOUNT_POINT"
+log_message "INFO: Скрипт запущен. Проверка флэшки: $FLASH_DRIVE_MOUNT_POINT"
 
 # 1. Проверка, что флэшка Примонтирована  и Доступна.
 if ! mountpoint -q "$FLASH_DRIVE_MOUNT_POINT"; then
-    log_message "ERROR: Flash drive '$FLASH_DRIVE_MOUNT_POINT' is not mounted or not accessible. Exiting."
+    log_message "ERROR: Флэшка '$FLASH_DRIVE_MOUNT_POINT' не смонтирована или недоступна. Выход."
     exit 1
 fi
 
 # 2. Проверка, Существует ли целевая папка
 if [ ! -d "$FULL_PATH_TO_FOLDER" ]; then
-    log_message "WARNING: Target folder '$FULL_PATH_TO_FOLDER' not found. Nothing to cleanup. Exiting."
+    log_message "WARNING: Целевая папка '$FULL_PATH_TO_FOLDER' не найдена. Нечего удалять. Выход."
     exit 0
 fi
 
@@ -423,50 +423,50 @@ while true; do
     # 3. Получение информации о Свободом месте
     DF_OUTPUT=$(df -P "$FLASH_DRIVE_MOUNT_POINT" 2>/dev/null | awk 'NR==2 {print $2, $4}') 
     if [ -z "$FLASH_DRIVE_MOUNT_POINT" ]; then
-        log_message "ERROR: Could not get disk space info for '$FLASH_DRIVE_MOUNT_POINT'. Check path or permissions. Exiting."
+        log_message "ERROR: Не удалось получить информацию о диске для '$FLASH_DRIVE_MOUNT_POINT'. Проверьте путь или разрешения. Выход."
         exit 1
     fi
     
     TOTAL_BLOCKS=$(echo "$DF_OUTPUT" | awk '{print $1}')
     AVAILABLE_BLOCKS=$(echo "$DF_OUTPUT" | awk '{print $2}')
 
-    # Прежде чем приступать к вычислению свободного места на флэшке - процент свободного места, - Сделаем проверку Отсутствия деления на ноль.
+    # Сделаем проверку Отсутствия деления на ноль.
     if [ "$TOTAL_BLOCKS" -eq 0 ]; then
-        log_message "ERROR: Total blocks on '$FLASH_DRIVE_MOUNT_POINT' is 0. Cannot calculate free space. Exiting."
+        log_message "ERROR: Общее количество блоков на '$FLASH_DRIVE_MOUNT_POINT' равно 0. Невозможно вычислить свободное место. Выход."
         exit 1
     fi
 
     FREE_SPACE_PERCENT=$(( AVAILABLE_BLOCKS * 100 / TOTAL_BLOCKS ))
-    log_message "INFO: Current free space on '$FLASH_DRIVE_MOUNT_POINT': $FREE_SPACE_PERCENT% (Target: >= $MIN_FREE_SPACE_PERCENT%.)"
+    log_message "INFO: Текущее свободное место на '$FLASH_DRIVE_MOUNT_POINT': $FREE_SPACE_PERCENT% (Цель: >= $MIN_FREE_SPACE_PERCENT%.)"
 
     # 4. Проверка Условия на Свободное место
     if [ "$FREE_SPACE_PERCENT" -ge "$MIN_FREE_SPACE_PERCENT" ]; then
-        log_message "INFO: Free space ($FREE_SPACE_PERCENT%) is sufficient. No cleanup needed. Exiting."
+        log_message "INFO: Свободного места ($FREE_SPACE_PERCENT%) достаточно. Очистка не требуется. Выход."
         break
     fi
 
     # 5. Если места не хватает, то Ищем и Удаляем файлы
-    log_message "WARNING: Free space is low ($FREE_SPACE_PERCENT%). Starting cleanup."
+    log_message "WARNING: Свободного места мало ($FREE_SPACE_PERCENT%). Начинаем очистку."
 
     # Найдём Самые Старые файлы с заданным шаблоном
-    FILES_TO_REMOVE=$(find "$FULL_PATH_TO_FOLDER" -maxdepth 1 -type f -name "$FILENAME_PATTERN" -printf '%T@ %p\n' 2>/dev/null | sort -n | head>
+    FILES_TO_REMOVE=$(find "$FULL_PATH_TO_FOLDER" -maxdepth 1 -type f -name "$FILENAME_PATTERN" -printf '%T@ %p\n' 2>/dev/null | sort -n | head -n "$FILES_TO_DELETE_PER_ITERATION" | awk '{print $2}')
     if [ -z "$FILES_TO_REMOVE" ]; then
-        log_message "INFO: No more files matching '$FILENAME_PATTERN' found in '$FULL_PATH_TO_FOLDER' to delete. Free space is still $FREE_SPAC>
+        log_message "INFO: Больше нет файлов, соответствующих шаблону '$FILENAME_PATTERN' в '$FULL_PATH_TO_FOLDER' для удаления. Свободного места по-прежнему $FREE_SPACE_PERCENT%. Выход."
         exit 0
     fi
 
     log_message "INFO: Deleting the following files:"
     echo "$FILES_TO_REMOVE" | while IFS= read -r file; do
         log_message " - $file"
-        rm -f "$file" || log_message "ERROR: Failed to delete $file."
+        rm -f "$file" || log_message "ERROR: Не удалось удалить файл $file."
     done
 
-    # Дадим системе немного времени обновить статистику диска.
+    # Дадим системе немного времени, чтобы обновить статистику диска.
     sleep 2
 
 done
 
-log_message "INFO: Script finished."
+log_message "INFO: Скрипт завершен."
 ```
 
 
